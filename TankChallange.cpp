@@ -11,7 +11,7 @@ class Pos
 {
 public:
 	Pos() {}
-	Pos(int x_, int y_) : x(x_), y(y_), bHighPriority(false){ }
+	Pos(int x_, int y_) : x(x_), y(y_), bHighPriority(false) { }
 	int x, y;
 	bool bHighPriority;
 };
@@ -23,7 +23,7 @@ class Map
 public:
 	Map()
 		: angle(0)
-		, currentPos(0,0)
+		, currentPos(0, 0)
 	{
 		//initial size 1x1
 		for (int i = 0; i < 1; i++)
@@ -36,29 +36,28 @@ public:
 
 	enum { unknown = 0, scanned_empty = 1, scanned_unknown = 2, enemy = 3, wall = 4 };
 	enum { front_ = 0, right_ = 1, back_ = 2, left_ = 3 };
-
-	enum { moveForward=1, moveBackward, turnRight, turnLeft };
+	enum { moveForward = 1, moveBackward, turnRight, turnLeft };
 
 public:
 	/*
 	updateMap handles :
 	-resizeing of the map based on new data
-	-updating the map data with new objects 
+	-updating the map data with new objects
 	-detecting enemies
 	-setting waypoints
-		(how waypoints are added)
-		-on resize set the corner of the new map as waypoint, try to add use opposite diagonal corners 
-		-if enemy was detected passing paralell to you, set it as waypoint
-		-note! no waypoint will be added outside the "known world", there will be no unreachable waypoints
-		(how waypoints are removed)
-		-if a waypoint is put on a wall then it's removed from the list once it's deteced it's a wall
-		-by reaching the waypoint
+	(how waypoints are added)
+	-on resize set the corner of the new map as waypoint, try to add use opposite diagonal corners
+	-if enemy was detected passing paralell to you, set it as waypoint
+	-note! no waypoint will be added outside the "known world", there will be no unreachable waypoints
+	(how waypoints are removed)
+	-if a waypoint is put on a wall then it's removed from the list once it's deteced it's a wall
+	-by reaching the waypoint
 	-finding the shortest path to the waypoint, call function getNextStep() to get the next command
 	*/
 	void updateMap(int lidarFront, int lidarRight, int lidarBack, int lidarLeft, bool target)
 	{
-		#define GETDISTANCE(a,b) (int)sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y))
-		#define UPDATE_MAP_VALUE(d,v) if((d) != wall && (d) != enemy) (d) = (v)
+#define GETDISTANCE(a,b) (int)sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y))
+#define UPDATE_MAP_VALUE(d,v) if((d) != wall && (d) != enemy) (d) = (v)
 
 		//resize memory behind the map
 		resize(lidarFront, lidarRight, lidarBack, lidarLeft);
@@ -171,21 +170,28 @@ public:
 
 	void info()
 	{
-		cout << "***********************************" << endl;
+		cout << "-------------------------------------------------------" << endl;
 		cout << "angle:" << angle << endl;
 		cout << "pos:" << currentPos.x << "," << currentPos.y << endl;
 
-		cout << "***********************************" << endl;
+		cout << "-------------------------------------------------------" << endl;
 		cout << "printing map" << endl;
+		cout << "-------------------------------------------------------" << endl;
 		int x = 0;
 		int y = 0;
 		for (y = mapData[0].size(); y > 0; y--)
 		{
 			for (x = 0; x < (int)mapData.size(); x++)
 			{
-				if (currentPos.x == x && currentPos.y == y - 1) 
+				if (currentPos.x == x && currentPos.y == y - 1)
 				{
-					cout << "+"; 
+					switch (angle)
+					{
+					case front_: cout << "^"; break;
+					case right_: cout << ">"; break;
+					case back_: cout << "v"; break;
+					case left_: cout << "<"; break;
+					}
 					continue;
 				}
 				int v = mapData[x][y - 1];
@@ -202,8 +208,24 @@ public:
 			cout << endl;
 		}
 
+		//compare to existing
+		/*cout << "-------------------------------------------------------" << endl;
+		for (y = mapData[0].size(); y > 0; y--)
+		{
+			for (x = 0; x < (int)mapData.size(); x++)
+			{
+				int v = mapData[x][y - 1];
+				int v = mapData[x][y - 1];
+			}
+		}
+		cout << "-------------------------------------------------------";*/
 		cout << "nWidth:" << mapData.size() << ", nHeight:" << mapData[0].size() << endl;
 
+	}
+
+	bool DiscoveryDone()
+	{
+		return waypoints.size() ? false : true;
 	}
 
 private:
@@ -238,7 +260,7 @@ private:
 		dDistanceRight = distance[right_];
 		dDistanceBack = distance[back_];
 		dDistanceLeft = distance[left_];
-		cout << "" << dDistanceFront << "," << dDistanceRight << "," << dDistanceBack << "," << dDistanceLeft << endl;
+		//cout << "" << dDistanceFront << "," << dDistanceRight << "," << dDistanceBack << "," << dDistanceLeft << endl;
 
 		//resize width
 		for (int i = 0; i < dDistanceRight; i++)
@@ -270,12 +292,14 @@ private:
 		if (dDistanceBack > 0)
 		{
 			currentPos.y += dDistanceBack;
-			for (int i = 0; i < (int)waypoints.size(); i++) waypoints[i].x += dDistanceLeft;
+			for (int i = 0; i < (int)waypoints.size(); i++) 
+				waypoints[i].y += dDistanceBack;
 		}
 		if (dDistanceLeft > 0)
 		{
 			currentPos.x += dDistanceLeft;
-			for (int i = 0; i < (int)waypoints.size(); i++) waypoints[i].x += dDistanceLeft;
+			for (int i = 0; i < (int)waypoints.size(); i++) 
+				waypoints[i].x += dDistanceLeft;
 		}
 
 		//add new corners as waypoints, add them diagonaly
@@ -283,13 +307,13 @@ private:
 		nHeight = mapData[0].size();
 
 		if (dDistanceFront > 0)
-			addWayPoint(Pos(1, nHeight-2), false);
+			addWayPoint(Pos(0, nHeight - 2), false);
 		if (dDistanceBack > 0)
-			addWayPoint(Pos(nWidth-2, nHeight-2), false);
+			addWayPoint(Pos(nWidth - 2, nHeight - 2), false);
 		if (dDistanceRight > 0)
-			addWayPoint(Pos(nWidth-2, 1), false);
+			addWayPoint(Pos(nWidth - 2, 0), false);
 		if (dDistanceLeft > 0)
-			addWayPoint(Pos(1,1), false);
+			addWayPoint(Pos(0, 0), false);
 
 		// TODO - analyze new lidar data for enemy movment, do cost analyses,  set waypoints
 
@@ -297,12 +321,12 @@ private:
 
 	void updatePath()
 	{
-		#define FRONT(p) Pos(p.x,p.y+1)
-		#define RIGHT(p) Pos(p.x,p.y-1)
-		#define BACK(p) Pos(p.x+1,p.y)
-		#define LEFT(p) Pos(p.x-1,p.y)
-		#define GETVAL(p) ((0 <= p.x && p.x < nWidth) && (0 <= p.y && p.y < nHeight)) ?  vpathfinder[p.x][p.y] : wall
-		#define SETVAL(p,v) vpathfinder[p.x][p.y] = v
+#define FRONT(p) Pos(p.x,p.y+1)
+#define RIGHT(p) Pos(p.x,p.y-1)
+#define BACK(p) Pos(p.x+1,p.y)
+#define LEFT(p) Pos(p.x-1,p.y)
+#define GETVAL(p) ((0 <= p.x && p.x < nWidth) && (0 <= p.y && p.y < nHeight)) ?  vpathfinder[p.x][p.y] : wall
+#define SETVAL(p,v) vpathfinder[p.x][p.y] = v
 
 		if (!waypoints.size()) return;
 
@@ -312,8 +336,8 @@ private:
 		vector<vector<int>> vpathfinder = mapData;
 		/*for (int i = 0; i < nWidth; i++)
 		{
-			vector<int> v = mapData[i];
-			vpathfinder.push_back(v);
+		vector<int> v = mapData[i];
+		vpathfinder.push_back(v);
 		}*/
 
 		Pos start = waypoints[0];
@@ -329,7 +353,7 @@ private:
 			if (cur == end)
 			{
 				bFound = true;
-				cout << "Path Found - step count:" << n << endl;
+				//cout << "Path Found - step count:" << n << endl;
 				continue;
 			}
 
@@ -355,6 +379,7 @@ private:
 			}
 			else
 			{
+				info();
 				cout << "Dead end, can't get to it!!!" << endl;
 				bFound = true;
 				bDeadEnd = true;
@@ -368,11 +393,11 @@ private:
 		int y = 0;
 		for (y = vpathfinder[0].size(); y > 0; y--)
 		{
-			for (x = 0; x < (int)vpathfinder.size(); x++)
-			{
-				cout << vpathfinder[x][y - 1];
-			}
-			cout << endl;
+		for (x = 0; x < (int)vpathfinder.size(); x++)
+		{
+		cout << vpathfinder[x][y - 1];
+		}
+		cout << endl;
 		}*/
 
 		//
@@ -387,7 +412,7 @@ private:
 			if (cur == start)
 			{
 				bFound = true;
-				cout << "Path Found - Step count:" << n << endl;
+				//cout << "Path Found - Step count:" << n << endl;
 				continue;
 			}
 
@@ -411,7 +436,7 @@ private:
 		//debug
 		/*for (int i = 0; i < (int)vpath.size(); i++)
 		{
-			cout << "step-" << i << " - " << vpath[i].x << "," << vpath[i].y << endl;
+		cout << "step-" << i << " - " << vpath[i].x << "," << vpath[i].y << endl;
 		}*/
 	}
 
@@ -425,7 +450,7 @@ private:
 			{
 				if (!waypoints[offset].bHighPriority) break;
 			}
-			waypoints.insert(waypoints.begin()+offset, p);
+			waypoints.insert(waypoints.begin() + offset, p);
 		}
 		else
 		{
@@ -443,7 +468,7 @@ struct simScanResults { int f; int b; int l; int r; bool enemy; int angle; };
 
 vector<vector<int>> g_simMap;
 
-void LoadMapData(string s) 
+void LoadMapData(string s)
 {
 	vector<int> v;
 	for (int i = 0; i < (int)s.length(); i++)
@@ -505,32 +530,32 @@ void simMovePos(int n, Pos & p, int angle)
 
 int main()
 {
-/*
-Map to simpulate
-.	0	1	2	3	4	5	6	7	8	9	10	11	12	13	14	15	16	17	18	19	20	21
-0	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#
-1	#	E	#	.	#	E	.	.	E	.	.	.	.	.	.	#	.	.	.	.	.	#
-2	#	.	.	.	#	#	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	#
-3	#	.	#	.	.	.	.	E	#	.	#	#	#	#	.	#	#	.	#	.	E	#
-4	#	.	#	.	#	#	#	#	#	.	.	.	.	#	.	E	.	.	#	#	#	#
-5	#	.	#	.	.	.	.	.	#	.	.	.	.	#	#	#	#	E	.	.	.	#
-6	#	.	#	.	.	#	.	.	.	.	.	.	.	.	#	.	.	.	.	E	.	#
-7	#	.	#	#	#	#	.	.	.	#	#	#	E	.	#	.	.	#	#	#	.	#
-8	#	.	.	.	.	.	.	.	#	.	.	#	#	.	#	.	.	.	#	.	.	#
-9	#	.	.	.	#	.	.	.	#	E	.	.	#	.	#	.	.	.	.	.	.	#
-10	#	.	.	E	#	.	.	.	#	.	S	.	#	.	#	.	.	.	#	.	.	#
-11	#	.	.	#	#	.	.	#	#	.	.	.	.	.	.	.	E	.	#	.	.	#
-12	#	.	.	#	.	.	.	E	#	#	#	#	#	#	#	.	.	.	#	.	.	#
-13	#	#	#	#	.	.	.	.	#	.	.	.	.	.	.	.	.	.	#	.	.	#
-14	#	E	#	.	.	.	.	.	#	.	.	.	.	.	.	.	.	.	#	.	.	#
-15	#	.	#	.	.	.	.	.	E	.	.	.	.	.	.	.	.	.	#	E	.	#
-16	#	.	#	.	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	.	#
-17	#	.	#	.	.	.	.	E	#	E	.	#	.	.	.	.	.	#	E	.	.	#
-18	#	.	.	.	.	.	.	.	E	.	.	.	.	.	.	#	.	#	.	.	.	#
-19	#	.	.	.	.	.	.	E	#	E	.	.	.	.	.	#	.	.	.	.	.	#
-20	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#
+	/*
+	Map to simpulate
+	.	0	1	2	3	4	5	6	7	8	9	10	11	12	13	14	15	16	17	18	19	20	21
+	0	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#
+	1	#	E	#	.	#	E	.	.	E	.	.	.	.	.	.	#	.	.	.	.	.	#
+	2	#	.	.	.	#	#	.	.	.	.	.	.	.	.	.	.	.	.	.	.	.	#
+	3	#	.	#	.	.	.	.	E	#	.	#	#	#	#	.	#	#	.	#	.	E	#
+	4	#	.	#	.	#	#	#	#	#	.	.	.	.	#	.	E	.	.	#	#	#	#
+	5	#	.	#	.	.	.	.	.	#	.	.	.	.	#	#	#	#	E	.	.	.	#
+	6	#	.	#	.	.	#	.	.	.	.	.	.	.	.	#	.	.	.	.	E	.	#
+	7	#	.	#	#	#	#	.	.	.	#	#	#	E	.	#	.	.	#	#	#	.	#
+	8	#	.	.	.	.	.	.	.	#	.	.	#	#	.	#	.	.	.	#	.	.	#
+	9	#	.	.	.	#	.	.	.	#	E	.	.	#	.	#	.	.	.	.	.	.	#
+	10	#	.	.	E	#	.	.	.	#	.	S	.	#	.	#	.	.	.	#	.	.	#
+	11	#	.	.	#	#	.	.	#	#	.	.	.	.	.	.	.	E	.	#	.	.	#
+	12	#	.	.	#	.	.	.	E	#	#	#	#	#	#	#	.	.	.	#	.	.	#
+	13	#	#	#	#	.	.	.	.	#	.	.	.	.	.	.	.	.	.	#	.	.	#
+	14	#	E	#	.	.	.	.	.	#	.	.	.	.	.	.	.	.	.	#	.	.	#
+	15	#	.	#	.	.	.	.	.	E	.	.	.	.	.	.	.	.	.	#	E	.	#
+	16	#	.	#	.	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	.	#
+	17	#	.	#	.	.	.	.	E	#	E	.	#	.	.	.	.	.	#	E	.	.	#
+	18	#	.	.	.	.	.	.	.	E	.	.	.	.	.	.	#	.	#	.	.	.	#
+	19	#	.	.	.	.	.	.	E	#	E	.	.	.	.	.	#	.	.	.	.	.	#
+	20	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#	#
 
-*/
+	*/
 	// NOTE! this map is loaded in on it's side. THIS DIRECTION IS UP -->
 	LoadMapData("######################");
 	LoadMapData("#E#.#E..E......#.....#");
@@ -553,7 +578,7 @@ Map to simpulate
 	LoadMapData("#.......E......#.#...#");
 	LoadMapData("#......E#E.....#.....#");
 	LoadMapData("######################");
-	
+
 
 	Pos scanPos(10, 10);
 	int scanAngle = Map::front_;
@@ -563,17 +588,19 @@ Map to simpulate
 	{
 		simScanResults sr;
 		simGetScan(scanPos, sr, scanAngle);
-		map.updateMap(sr.f,sr.r,sr.b,sr.l,sr.enemy);
-		map.info();
+		map.updateMap(sr.f, sr.r, sr.b, sr.l, sr.enemy);
+		//map.info();
 		switch (map.getNextStep())
 		{
-		case Map::moveForward: { map.move(1); simMovePos(1,scanPos, scanAngle); break; }
-		case Map::moveBackward: { map.move(-1); simMovePos(-1,scanPos, scanAngle); break;}
+		case Map::moveForward: { map.move(1); simMovePos(1, scanPos, scanAngle); break; }
+		case Map::moveBackward: { map.move(-1); simMovePos(-1, scanPos, scanAngle); break;}
 		case Map::turnRight: { map.setangle(1);  scanAngle++; scanAngle %= 4; break; }
 		case Map::turnLeft: { map.setangle(-1); scanAngle--; if (scanAngle < 0) scanAngle += 4; scanAngle %= 4; break; }
 		}
+		bDiscoveryDone = map.DiscoveryDone();
 	}
-
+	map.info();
+	cout << "Map Discovery - Done!!!" << endl;
 
 	//map.updateMap(1, 3, 1, 2, true);
 	//map.info();
