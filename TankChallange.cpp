@@ -79,6 +79,7 @@ public:
 	void updateMap(int lidarFront, int lidarRight, int lidarBack, int lidarLeft, bool target)
 	{
 #define GETDISTANCE(a,b) (int)sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y))
+//TODO - write a more advanced function to handle history of enemy posistions, for threat analysis 
 #define UPDATE_MAP_VALUE(d,v) if((d) != wall && (d) != enemy) (d) = (v)
 
 		//resize memory behind the map
@@ -184,7 +185,7 @@ public:
 			nextPos = vNextEnemy[0];
 
 			//decide what command to exec based on currentPos, nextPos and angle
-			//TODO - optimize witch way to turn if the enemy is on your back
+			//TODO - optimize witch way to turn if the enemy is on your back, currently it just turns right
 			vector<int> vmove(4);
 			vmove[(front_ + angle) % 4] = fire;
 			vmove[(right_ + angle) % 4] = turnRight;
@@ -376,31 +377,19 @@ private:
 
 		if (dDistanceFront > 0)
 		{
-			//addWayPoint(Pos(1 + nWidth / 3, nHeight - 1), false, false);
 			addWayPoint(Pos(1, nHeight - 1), false, false);
-			//addWayPoint(Pos(1, nHeight - 1 - nHeight/3), false, false);
-			//if (dDistanceFront > 3) addWayPoint(Pos(currentPos.x, currentPos.y + dDistanceFront - 1), false, true);
 		}
 		if (dDistanceBack > 0)
 		{
-			//addWayPoint(Pos(nWidth - 1 - nWidth / 3, nHeight - 1), false, false);
 			addWayPoint(Pos(nWidth - 1, nHeight - 1), false, false);
-			//addWayPoint(Pos(nWidth - 1, nHeight - 1 - nHeight / 3), false, false);
-			//if (dDistanceBack > 3) addWayPoint(Pos(currentPos.x, currentPos.y - dDistanceBack + 1), false, true);
 		}
 		if (dDistanceRight > 0)
 		{
-			//addWayPoint(Pos(nWidth - 1 - nWidth / 3, 1), false, false);
 			addWayPoint(Pos(nWidth - 1, 1), false, false);
-			//addWayPoint(Pos(nWidth - 1, 1 + nHeight / 3), false, false);
-			//if (dDistanceRight > 3) addWayPoint(Pos(currentPos.x + dDistanceRight - 1, currentPos.y), false, true);
 		}
 		if (dDistanceLeft > 0)
 		{
-			//addWayPoint(Pos(1 + nWidth / 3, 1), false, false);
 			addWayPoint(Pos(1, 1), false, false);
-			//addWayPoint(Pos(1, 1 + nHeight / 3), false, false);
-			//if(dDistanceLeft > 3) addWayPoint(Pos(currentPos.x - dDistanceLeft + 1, currentPos.y), false, true);
 		}
 
 		// TODO - analyze new lidar data for enemy movment, do cost analyses,  set waypoints
@@ -417,7 +406,6 @@ private:
 		vector<scanResults> vsr(4); 
 		ScanMap(currentPos, vsr, angle);
 		//debug
-		//
 		//vsr[0].v = wall;
 		//vsr[1].v = enemy;
 		//vsr[2].v = enemy;
@@ -493,7 +481,8 @@ private:
 			int nCostAll = 0;
 			int nCost = 0;
 			const int nStepToFire = 1;
-
+			
+			//TODO - find out if enemy can both fire and turn at the same time
 			//cost_idle = 1, cost_turn = 1, cost_move = 1, cost_fire = 5, cost_hit
 			for (int j = 0; j < (int)vkill.size(); j++)
 			{
