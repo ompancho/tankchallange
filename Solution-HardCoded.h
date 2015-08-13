@@ -111,18 +111,182 @@ class Solution {
     vAction[2].push_back(turnLeft);
     
     // level 4 - 
-    vAction[3].push_back(fireCannon);
-    vAction[3].push_back(turnRight);
-    vAction[3].push_back(fireCannon);
-    vAction[3].push_back(turnRight);
-    vAction[3].push_back(fireCannon);
-    vAction[3].push_back(moveForward);
     vAction[3].push_back(turnLeft);
-    vAction[3].push_back(fireCannon);
-    vAction[3].push_back(fireCannon);
+    vAction[3].push_back(turnLeft);
+    vAction[3].push_back(turnLeft);
+    vAction[3].push_back(turnLeft);
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnLeft);
+    vAction[3].push_back(turnLeft);
+     vAction[3].push_back(moveForward);
+    
+    for(int i = 0; i < 2; i++)
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnLeft);
     vAction[3].push_back(turnRight);
+    for(int i = 0; i < 2; i++)
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(turnLeft);
+    for(int i = 0; i < 2; i++)
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+    for(int i = 0; i < 6; i++)//delay
+     vAction[3].push_back(wait);
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnLeft);
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(turnLeft);
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(turnRight);
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+     vAction[3].push_back(moveForward);
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnLeft);
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(turnLeft);
+     vAction[3].push_back(moveForward);
     vAction[3].push_back(turnRight);
     
+    //for(int i = 0; i < 4; i++)//delay
+    vAction[3].push_back(turnLeft);
+    
+    vAction[3].push_back(turnLeft);
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+    //corner
+    //delay
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(turnLeft);
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(turnLeft);
+    
+    vAction[3].push_back(turnRight);
+    for(int i = 0; i < 3; i++)
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(turnLeft);
+    for(int i = 0; i < 2; i++)
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(turnLeft);
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(turnLeft);
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnLeft);
+    vAction[3].push_back(turnRight);
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+    //corner
+    for(int i = 0; i < 3; i++)
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnLeft);
+    vAction[3].push_back(turnRight);
+    for(int i = 0; i < 2; i++)
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(turnLeft);
+    for(int i = 0; i < 5; i++)
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnLeft);
+    vAction[3].push_back(turnRight);
+    for(int i = 0; i < 2; i++)
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(turnLeft);
+
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(turnLeft);
+    for(int i = 0; i < 2; i++)
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(turnLeft);
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnLeft);
+    vAction[3].push_back(turnRight);
+
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(turnLeft);
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+    //corner
+
+    for(int i = 0; i < 2; i++)
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+    for(int i = 0; i < 4; i++)
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnLeft);
+
+    vAction[3].push_back(turnRight);
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnLeft);
+    for(int i = 0; i < 4; i++)
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnLeft);
+    vAction[3].push_back(turnRight);
+    for(int i = 0; i < 2; i++)
+     vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(turnRight);
+
+
+
+
+
+     /*
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(wait);
+    vAction[3].push_back(turnRight);
+    for(int i = 0; i < 4; i++)
+      vAction[3].push_back(moveBackward);*/
+/*
+    for(int i = 0; i < 10; i++)
+    {
+      vAction[3].push_back(turnRight);
+      vAction[3].push_back(wait);
+      vAction[3].push_back(wait);
+      vAction[3].push_back(turnRight);
+      vAction[3].push_back(turnRight);
+      vAction[3].push_back(wait);
+      vAction[3].push_back(wait);
+      vAction[3].push_back(turnRight);
+    
+      vAction[3].push_back(moveForward);
+    }
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(turnRight);
+    vAction[3].push_back(moveForward);
+    vAction[3].push_back(turnRight);
+
+    for(int i = 0; i < 10; i++)
+    {
+      vAction[3].push_back(turnRight);
+      vAction[3].push_back(wait);
+      vAction[3].push_back(wait);
+      vAction[3].push_back(turnRight);
+      vAction[3].push_back(wait);
+      vAction[3].push_back(turnRight);
+      vAction[3].push_back(wait);
+      vAction[3].push_back(wait);
+      vAction[3].push_back(turnRight);
+      vAction[3].push_back(wait);
+
+      vAction[3].push_back(moveForward);
+    }*/
     
     
     // level 5 - 2949
@@ -163,7 +327,121 @@ class Solution {
       vAction[4].push_back(fireCannon);*/  
 
     //7406 (1,2,3,5)
+    vAction[5].push_back(turnRight);
+    vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnRight);
+    vAction[5].push_back(moveForward);
+    vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnRight);
+    vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnLeft);
+    for(int i = 0; i < 120; i++)
+      vAction[5].push_back(wait);
+    for(int i = 0; i < 3; i++)
+      vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnLeft);
+    for(int i = 0; i < 4; i++)
+      vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnLeft);
+    vAction[5].push_back(wait);
+    vAction[5].push_back(wait);
+    vAction[5].push_back(moveForward);
+    vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnLeft);
+    for(int i = 0; i < 12; i++)
+      vAction[5].push_back(wait);
+    vAction[5].push_back(turnRight);
+    vAction[5].push_back(turnRight);
+    for(int i = 0; i < 12; i++)
+      vAction[5].push_back(wait);
+    vAction[5].push_back(turnLeft);
+    vAction[5].push_back(moveBackward);
+    vAction[5].push_back(moveBackward);
+    vAction[5].push_back(turnRight);
+    for(int i = 0; i < 4; i++)
+      vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnLeft);
+    vAction[5].push_back(wait);
+    vAction[5].push_back(wait);
+    for(int i = 0; i < 3; i++)
+      vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnRight);
+    vAction[5].push_back(wait);
+    vAction[5].push_back(turnLeft);
+    for(int i = 0; i < 3; i++)
+      vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnRight);
+    vAction[5].push_back(wait);
+    vAction[5].push_back(turnLeft);
+    
+    vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnLeft);
+    vAction[5].push_back(wait);
+    vAction[5].push_back(turnRight);
+    vAction[5].push_back(moveForward);
+    vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnLeft);
 
+    for(int i = 0; i < 11; i++)
+      vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnLeft);
+    vAction[5].push_back(wait);
+    vAction[5].push_back(wait);
+    vAction[5].push_back(moveForward);
+    vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnLeft);
+    for(int i = 0; i < 12; i++)
+      vAction[5].push_back(wait);
+    vAction[5].push_back(turnRight);
+    vAction[5].push_back(turnRight);
+    for(int i = 0; i < 15; i++)
+      vAction[5].push_back(wait);
+    for(int i = 0; i < 4; i++)
+      vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnRight);
+    vAction[5].push_back(wait);
+    vAction[5].push_back(turnRight);
+    vAction[5].push_back(turnRight);
+    vAction[5].push_back(wait);
+    vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnRight);
+    vAction[5].push_back(wait);
+    vAction[5].push_back(turnLeft);
+    for(int i = 0; i < 3; i++)
+      vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnRight);
+    vAction[5].push_back(wait);
+    vAction[5].push_back(turnLeft);
+    vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnLeft);
+    vAction[5].push_back(wait);
+    for(int i = 0; i < 3; i++)
+      vAction[5].push_back(moveForward);
+
+    vAction[5].push_back(turnLeft);
+    vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnRight);
+    vAction[5].push_back(wait);
+    vAction[5].push_back(wait);
+    vAction[5].push_back(turnLeft);
+
+    for(int i = 0; i < 3; i++)
+      vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnRight);
+    vAction[5].push_back(wait);
+    vAction[5].push_back(wait);
+  
+    
+    /*
+    vAction[5].push_back(turnLeft);
+    vAction[5].push_back(wait);
+    vAction[5].push_back(turnLeft);     
+    vAction[5].push_back(turnLeft); 
+    vAction[5].push_back(wait);
+    for(int i = 0; i < 3; i++)
+      vAction[5].push_back(moveForward);
+    vAction[5].push_back(turnLeft);  
+      */
     nStep = 0;
   }
   
@@ -237,6 +515,12 @@ class Solution {
     //else
     //  cout << "nTrack: " << nTrack << endl;
     
+    if(nTrack == 3 && bTarget)
+    {
+      cout << nStep << " - Fire" << endl;
+      API::fireCannon();
+    }
+    else
     if(vAction[nTrack].size() && nTrack >= 0)
     {
       int nAction = vAction[nTrack][0];
