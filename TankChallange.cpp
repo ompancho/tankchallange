@@ -31,11 +31,19 @@ struct scanResults { int d; int v; int a; int direction; Pos p; };
 
 vector<vector<int>> mapDataSim;
 
-
+/*
 bool pairIntVectorCompare(pair<int, vector<int>> & a, pair<int, vector<int>> & b)
 {
 	return a.first < b.first;
-}
+}*/
+struct cmpIntVector
+{
+	inline bool operator() (const pair<int, vector<int>> & a, const pair<int, vector<int>> & b)
+	{
+		return a.first < b.first;
+	}
+};
+
 
 //
 class Map
