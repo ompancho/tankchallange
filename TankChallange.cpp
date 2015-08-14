@@ -35,11 +35,19 @@ struct scanResults { int d; int v; int a; int direction; Pos p; };
 
 vector<vector<int>> mapDataSim;
 
-
+/*
 bool pairIntVectorCompare(pair<int, vector<int>> & a, pair<int, vector<int>> & b)
 {
 	return a.first < b.first;
-}
+}*/
+
+struct pairIntVectorCompare
+{
+	inline bool operator() (pair<int, vector<int>> & a, pair<int, vector<int>> & b)
+	{
+		return (a.first < b.first);
+	}
+};
 
 #define FRONT(p) Pos(p.x,p.y+1)
 #define BACK(p) Pos(p.x,p.y-1)
@@ -77,28 +85,28 @@ public:
 
 
 public:
-	/*
-	updateMap handles :
-	-resizeing of the map based on new data
-	-updating the map data with new objects
-	-detecting enemies
-	-setting waypoints
-	(how waypoints are added)
-	-on resize set the corner of the new map as waypoint, try to add use opposite diagonal corners
-	-if enemy was detected passing paralell to you, set it as waypoint
-	-note! no waypoint will be added outside the "known world", there will be no unreachable waypoints
-	(how waypoints are removed)
-	-if a waypoint is put on a wall then it's removed from the list once it's deteced it's a wall
-	-by reaching the waypoint
-	-finding the shortest path to the waypoint, call function getNextStep() to get the next command
-	*/
+	
+	//updateMap handles :
+	//-resizeing of the map based on new data
+	//-updating the map data with new objects
+	//-detecting enemies
+	//-setting waypoints
+	//(how waypoints are added)
+	//-on resize set the corner of the new map as waypoint, try to add use opposite diagonal corners
+	//-if enemy was detected passing paralell to you, set it as waypoint
+	//-note! no waypoint will be added outside the "known world", there will be no unreachable waypoints
+	//(how waypoints are removed)
+	//-if a waypoint is put on a wall then it's removed from the list once it's deteced it's a wall
+	//-by reaching the waypoint
+	//-finding the shortest path to the waypoint, call function getNextStep() to get the next command
+	
 	void updateMap(int lidarFront, int lidarRight, int lidarBack, int lidarLeft, bool target)
 	{
 		lidarR = lidarRight;
 		lidarL = lidarLeft;
 
 		//resize memory behind the map
-		resize(lidarFront, lidarRight, lidarBack, lidarLeft);
+		//resize(lidarFront, lidarRight, lidarBack, lidarLeft);
 
 		Pos & p = currentPos;
 		//update map with new lidar data
@@ -162,15 +170,15 @@ public:
 				}
 			}
 		}
-		threatAssessment();
+		//threatAssessment();
 
 		//update the next step to take
-		updatePath();
+		//updatePath();
 	}
 
-	void UpdateMapValue(Pos &p, int v)
+	void UpdateMapValue(Pos p, int v)
 	{
-		int & d = mapData[p.x][p.y];
+	  int & d = mapData[p.x][p.y];
 
 		int nFreeSideCount = 0;
 		if (GetValue(mapData, FRONT(p)) == scanned_empty) nFreeSideCount++;
@@ -197,7 +205,7 @@ public:
 		if (d != wall && d != enemy)
 		{
 			d = v;
-		}
+		}	/**/
 	}
 
 
@@ -335,26 +343,26 @@ public:
 		}
 
 		//compare to existing
-		/*cout << "-------------------------------------------------------" << endl;
-		for (y = mapData[0].size(); y > 0; y--)
-		{
-		for (x = 0; x < (int)mapData.size(); x++)
-		{
-		int v = mapData[x][y - 1];
-		int v = mapData[x][y - 1];
-		}
-		}
-		cout << "-------------------------------------------------------";*/
+		//cout << "-------------------------------------------------------" << endl;
+		//for (y = mapData[0].size(); y > 0; y--)
+		//{
+		//for (x = 0; x < (int)mapData.size(); x++)
+		//{
+		//int v = mapData[x][y - 1];
+		//int v = mapData[x][y - 1];
+		//}
+		//}
+		//cout << "-------------------------------------------------------";
 		cout << "nWidth:" << mapData.size() << ", nHeight:" << mapData[0].size() << endl;
 
 	}
 
-	bool DiscoveryDone()
-	{
-		if(!waypoints.size()) 
-			AddAllUnknownsAsWaypoints();
-		return waypoints.size() ? false : true;
-	}
+	//bool DiscoveryDone()
+	//{
+	//	if(!waypoints.size()) 
+	//		AddAllUnknownsAsWaypoints();
+	//	return waypoints.size() ? false : true;
+	//}
 
 private:
 	void resize(int lidarFront, int lidarRight, int lidarBack, int lidarLeft)
@@ -463,11 +471,11 @@ private:
 
 	}
 
-	/*
-	*	scan the area for enemies
-	*	calculate cost to kill all enemies
-	*	sort by lowest cost first, use lowest cost operations
-	*/
+	
+	//scan the area for enemies
+	//calculate cost to kill all enemies
+	//sort by lowest cost first, use lowest cost operations
+	
 	void threatAssessment()
 	{
 		vector<scanResults> vsr(4); 
@@ -533,10 +541,10 @@ private:
 		}
 
 		//debug
-		/*orderToKill.clear();
-		orderToKill.push_back({ 0,1,2,3 });
-		orderToKill.push_back({ 0,3,2,1 });
-		orderToKill.push_back({ 3,2,1,0 });*/
+		//orderToKill.clear();
+		//orderToKill.push_back({ 0,1,2,3 });
+		//orderToKill.push_back({ 0,3,2,1 });
+		//orderToKill.push_back({ 3,2,1,0 });
 		//orderToKill.push_back({ 2,0,3,1 });
 
 		vector < pair< int, vector<int> > > vCostToKill;
@@ -561,7 +569,7 @@ private:
 
 				//TODO - impruve it with enemy classification, inbound, outbound, static...
 				bool bShoot = false;
-				if (sr.v == enemy /*&& sr.direction == enemy_inbound*/)
+				if (sr.v == enemy ) //&& sr.direction == enemy_inbound
 				{
 					bShoot = true;
 				}
@@ -586,7 +594,7 @@ private:
 			}
 			vCostToKill.push_back(std::make_pair(nCostAll, vkill));
 		}
-		sort(vCostToKill.begin(), vCostToKill.end(), pairIntVectorCompare);
+		sort(vCostToKill.begin(), vCostToKill.end(), pairIntVectorCompare());
 	
 		//assign the enemy to be your next target
 		vNextEnemy.clear();
@@ -710,8 +718,8 @@ private:
 			bool bFound = false;
 
 			//if the point is close by try to probe unknown objects
-			/*if (GETDISTANCE(start, end) < 4)
-				bWalkOnScanedUnknown = true;*/
+			//if (GETDISTANCE(start, end) < 4)
+			//	bWalkOnScanedUnknown = true;
 
 			vector<Pos> vtemp;
 			vpathfinder[start.x][start.y] = -1;
@@ -805,10 +813,10 @@ private:
 		while(bDeadEnd);
 
 		//debug
-		/*for (int i = 0; i < (int)vpath.size(); i++)
-		{
-		cout << "step-" << i << " - " << vpath[i].x << "," << vpath[i].y << endl;
-		}*/
+		//for (int i = 0; i < (int)vpath.size(); i++)
+		//{
+		//cout << "step-" << i << " - " << vpath[i].x << "," << vpath[i].y << endl;
+		//}
 	}
 
 	bool CanWalkON(Pos &p, bool bWalkOnScanedUnknown, bool bWalkOnVisited)
@@ -816,7 +824,7 @@ private:
 		int v = GetValue(vpathfinder,p);
 
 		if (p == currentPos) bWalkOnVisited = true;
-		if (v == unknown || v == scanned_empty || v == enemy || (/*bWalkOnScanedUnknown && */v == scanned_unknown) || (bWalkOnVisited && v == visited))
+		if (v == unknown || v == scanned_empty || v == enemy || (bWalkOnScanedUnknown && v == scanned_unknown) || (bWalkOnVisited && v == visited))
 		{
 			return true;
 		}
@@ -874,6 +882,7 @@ public:
 	bool bSortWayPoint;
 	vector<vector<int>> vpathfinder;
 };
+
 
 void LoadMapData(string s)
 {
