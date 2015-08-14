@@ -136,25 +136,25 @@ public:
 		{
 			mapData[p.x][p.y + i] = scanned_empty;
 		}
-		UpdateMapValue(Pos(p.x, p.y + dDistanceFront), lidarData[front_]);
+		UpdateMapValue(Pos(p.x, p.y + dDistanceFront), lidarData[front_], front_);
 
 		for (int i = 1; i < dDistanceRight; i++)
 		{
 			mapData[p.x + i][p.y] = scanned_empty;
 		}
-		UpdateMapValue(Pos(p.x + dDistanceRight, p.y), lidarData[right_]);
+		UpdateMapValue(Pos(p.x + dDistanceRight, p.y), lidarData[right_], right_);
 
 		for (int i = 1; i < dDistanceBack; i++)
 		{
 			mapData[p.x][p.y - i] = scanned_empty;
 		}
-		UpdateMapValue(Pos(p.x, p.y - dDistanceBack), lidarData[back_]);
+		UpdateMapValue(Pos(p.x, p.y - dDistanceBack), lidarData[back_], back_);
 
 		for (int i = 1; i < dDistanceLeft; i++)
 		{
 			mapData[p.x - i][p.y] = scanned_empty;
 		}
-		UpdateMapValue(Pos(p.x - dDistanceLeft, p.y), lidarData[left_]);
+		UpdateMapValue(Pos(p.x - dDistanceLeft, p.y), lidarData[left_], left_);
 
 		//
 		mapData[currentPos.x][currentPos.y] = visited;
@@ -177,17 +177,21 @@ public:
 		updatePath();
 	}
 
-	void UpdateMapValue(Pos p, int v)
+	void UpdateMapValue(Pos p, int v, int angle)
 	{
 		int & d = mapData[p.x][p.y];
 
 		int nFreeSideCount = 0;
-		if (GetValue(mapData, FRONT(p)) == scanned_empty) nFreeSideCount++;
-		if (GetValue(mapData, BACK(p)) == scanned_empty) nFreeSideCount++;
-		if (GetValue(mapData, LEFT(p)) == scanned_empty) nFreeSideCount++;
-		if (GetValue(mapData, RIGHT(p)) == scanned_empty) nFreeSideCount++;
+		int vf = GetValue(mapData, FRONT(p));
+		int vr = GetValue(mapData, RIGHT(p));
+		int vb = GetValue(mapData, BACK(p));
+		int vl = GetValue(mapData, LEFT(p));
+		if (vf == scanned_empty) nFreeSideCount++;
+		if (vr == scanned_empty) nFreeSideCount++;
+		if (vb == scanned_empty) nFreeSideCount++;
+		if (vl == scanned_empty) nFreeSideCount++;
 
-		//unknown
+		// look at some corners
 		if (d == unknown && v == scanned_unknown && nFreeSideCount >= 2)
 		{
 			//dont add outer edges
@@ -196,16 +200,31 @@ public:
 				addWayPoint(p, true, true);
 			}
 		}
-		//moving enemy
-		if ((d == scanned_empty || v == visited) && (v == scanned_unknown))
+		//moving enemy on the side
+		if ((d == scanned_empty || v == visited) && (v == scanned_unknown) )
 		{
-			d = enemy;
+			if(GETDISTANCE(p, currentPos) <= 3)
+				d = enemy;
+			else
+				//TODO - Impruve this!!!
+				addWayPoint(p, true, true); //add a way point,
+
 		}
-		//moving enemy - add waypoint
+		//moving enemy on the front
+		if ((d == scanned_empty || v == visited) && (v == enemy))
+		{
+			if(GETDISTANCE(p, currentPos) <= 2)
+				d = enemy;
+			else
+				//TODO - Impruve this!!!
+				addWayPoint(p, true, true); //add a way point,
+		}
+		//something moved, enemy - add waypoint
 		if ((d == scanned_unknown) && (v == scanned_empty))
 		{
 			d = v;
-			addWayPoint(p, false, false);
+			//TODO - Impruve this!!!
+			addWayPoint(p, true, true); //add a way point,
 		}
 		if (d != wall && d != enemy)
 		{
@@ -646,18 +665,24 @@ private:
 
 	void AddAllUnknownsAsWaypoints()
 	{
-		for (int x = 1; x < (int)mapData.size() - 1; x++)
+		vector<int> type = { unknown, scanned_unknown };
+		for (size_t t = 0; t < 2; t++)
 		{
-			for (int y = 1; y < (int)mapData[0].size() - 1; y++)
+			for (int x = 1; x < (int)mapData.size() - 1; x++)
 			{
-				int v = mapData[x][y];
-				if (v == scanned_unknown || v == unknown)
+				for (int y = 1; y < (int)mapData[0].size() - 1; y++)
 				{
-					Pos p(x, y);
-					addWayPoint(p, false, false);
+					int v = mapData[x][y];
+					if (v == type[t])
+					{
+						Pos p(x, y);
+						addWayPoint(p, false, false);
+					}
 				}
+				cout << endl;
 			}
-			cout << endl;
+			if (waypoints.size())
+				break;
 		}
 	}
 
