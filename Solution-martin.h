@@ -203,22 +203,21 @@ public:
 		//moving enemy on the side
 		if ((d == scanned_empty || v == visited) && (v == scanned_unknown) )
 		{
-			if(GETDISTANCE(p, currentPos) <= 3)
+		//	if(GETDISTANCE(p, currentPos) <= 3)
 				d = enemy;
-			else
+		//	else
 				//TODO - Impruve this!!!
-				addWayPoint(p, true, true); //add a way point,
-
+		//		addWayPoint(p, true, true); //add a way point,
 		}
 		//moving enemy on the front
-		if ((d == scanned_empty || v == visited) && (v == enemy))
+		/*if ((d == scanned_empty || v == visited) && (v == enemy))
 		{
 			if(GETDISTANCE(p, currentPos) <= 2)
 				d = enemy;
 			else
 				//TODO - Impruve this!!!
 				addWayPoint(p, true, true); //add a way point,
-		}
+		}*/
 		//something moved, enemy - add waypoint
 		if ((d == scanned_unknown) && (v == scanned_empty))
 		{
@@ -974,7 +973,7 @@ class Solution {
     if(nStep == 4) API::turnLeft();*/
 
 		map.updateMap(f, r, b, l, enemy);
-		map.info();
+		//map.info();
 		cout << "Fuel: " << API::currentFuel() << endl;
 		cout << "Lidar: " << f << "," << r << "," << b << "," << l << "," << enemy << endl;
 
