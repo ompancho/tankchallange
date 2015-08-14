@@ -16,10 +16,11 @@ class Pos
 {
 public:
 	Pos() {}
-	Pos(int x_, int y_) : x(x_), y(y_), d(0), bHighPriority(false) { }
+	Pos(int x_, int y_) : x(x_), y(y_), d(0), bHighPriority(false), bLookOnly(false) { }
 	int x, y;
 	bool bHighPriority;
 	double d;
+	bool bLookOnly;
 };
 inline bool operator==(const Pos& p1, const Pos& p2) { return p1.x == p2.x && p1.y == p2.y; }
 struct cmpPos
@@ -32,22 +33,23 @@ struct cmpPos
 
 struct scanResultsSim { int f; int b; int l; int r; bool enemy; int angle; };
 struct scanResults { int d; int v; int a; int direction; Pos p; };
-
 vector<vector<int>> mapDataSim;
 
-/*
-bool pairIntVectorCompare(pair<int, vector<int>> & a, pair<int, vector<int>> & b)
+struct compareKillCost
 {
-	return a.first < b.first;
-}*/
-
-struct pairIntVectorCompare
-{
-	inline bool operator() (pair<int, vector<int>> & a, pair<int, vector<int>> & b)
+	inline bool operator() (const pair<int, vector<int>> & a, const pair<int, vector<int>> & b)
 	{
 		return (a.first < b.first);
 	}
 };
+struct compareWaypoint
+{
+	inline bool operator() (const pair<int, Pos> & a, const pair<int, Pos> & b)
+	{
+		return ((a.first * a.second.d * (a.second.bHighPriority ? 1 : 100)) < (b.first * b.second.d) * (b.second.bHighPriority ? 1 : 100));
+	}
+};
+
 
 #define FRONT(p) Pos(p.x,p.y+1)
 #define BACK(p) Pos(p.x,p.y-1)
@@ -85,7 +87,7 @@ public:
 
 
 public:
-	
+
 	//updateMap handles :
 	//-resizeing of the map based on new data
 	//-updating the map data with new objects
@@ -99,14 +101,14 @@ public:
 	//-if a waypoint is put on a wall then it's removed from the list once it's deteced it's a wall
 	//-by reaching the waypoint
 	//-finding the shortest path to the waypoint, call function getNextStep() to get the next command
-	
+
 	void updateMap(int lidarFront, int lidarRight, int lidarBack, int lidarLeft, bool target)
 	{
 		lidarR = lidarRight;
 		lidarL = lidarLeft;
 
 		//resize memory behind the map
-		//resize(lidarFront, lidarRight, lidarBack, lidarLeft);
+		resize(lidarFront, lidarRight, lidarBack, lidarLeft);
 
 		Pos & p = currentPos;
 		//update map with new lidar data
@@ -149,47 +151,48 @@ public:
 		for (int i = 1; i < dDistanceLeft; i++)
 		{
 			mapData[p.x - i][p.y] = scanned_empty;
-		} 
+		}
 		UpdateMapValue(Pos(p.x - dDistanceLeft, p.y), lidarData[left_]);
-		
+
 		//
 		mapData[currentPos.x][currentPos.y] = visited;
-
-		//TODO - setting waypoints 
-		//addWayPoint(p);
 
 		//remove waypoint if we have deteced as wall, but only if the distance to the waypoint from current position is 1 step (that way we don't delete it prematurely)
 		if (waypoints.size())
 		{
-			if (GETDISTANCE(waypoints[0], currentPos) < 2)
+			if (GETDISTANCE(waypoints[0].second, currentPos) < 2)
 			{
-				if (mapData[waypoints[0].x][waypoints[0].y] == wall)
+				if (mapData[waypoints[0].second.x][waypoints[0].second.y] == wall)
 				{
 					waypoints.erase(waypoints.begin());
 					bSortWayPoint = true;
 				}
 			}
 		}
-		//threatAssessment();
+		threatAssessment();
 
 		//update the next step to take
-		//updatePath();
+		updatePath();
 	}
 
 	void UpdateMapValue(Pos p, int v)
 	{
-	  int & d = mapData[p.x][p.y];
+		int & d = mapData[p.x][p.y];
 
 		int nFreeSideCount = 0;
 		if (GetValue(mapData, FRONT(p)) == scanned_empty) nFreeSideCount++;
 		if (GetValue(mapData, BACK(p)) == scanned_empty) nFreeSideCount++;
 		if (GetValue(mapData, LEFT(p)) == scanned_empty) nFreeSideCount++;
 		if (GetValue(mapData, RIGHT(p)) == scanned_empty) nFreeSideCount++;
-		
+
 		//unknown
-		if (d == scanned_empty && v == scanned_unknown && nFreeSideCount >= 2)
+		if (d == unknown && v == scanned_unknown && nFreeSideCount >= 2)
 		{
-			addWayPoint(p, true, false);
+			//dont add outer edges
+			if( ( 0 < p.x && p.x < (int)mapData.size() - 1) && (0 < p.y && p.y < (int)mapData[0].size() - 1) )
+			{
+				addWayPoint(p, true, true);
+			}
 		}
 		//moving enemy
 		if ((d == scanned_empty || v == visited) && (v == scanned_unknown))
@@ -208,7 +211,6 @@ public:
 		}	/**/
 	}
 
-
 	void move(int n)
 	{
 		switch (angle)
@@ -222,7 +224,7 @@ public:
 		//remove waypoint if we have reached it
 		if (waypoints.size())
 		{
-			if (currentPos == waypoints[0])
+			if (currentPos == waypoints[0].second)
 			{
 				cout << "Remove WayPoint" << endl;
 				waypoints.erase(waypoints.begin());
@@ -245,7 +247,7 @@ public:
 	int getNextStep()
 	{
 		//do we have any enemies in sight, deal with them, 
-		if(vNextEnemy.size())
+		if (vNextEnemy.size())
 		{
 			//we have two options here, fire or turn
 			nextPos = vNextEnemy[0];
@@ -429,13 +431,13 @@ private:
 		{
 			currentPos.y += dDistanceBack;
 			for (int i = 0; i < (int)waypoints.size(); i++)
-				waypoints[i].y += dDistanceBack;
+				waypoints[i].second.y += dDistanceBack;
 		}
 		if (dDistanceLeft > 0)
 		{
 			currentPos.x += dDistanceLeft;
 			for (int i = 0; i < (int)waypoints.size(); i++)
-				waypoints[i].x += dDistanceLeft;
+				waypoints[i].second.x += dDistanceLeft;
 		}
 
 		//add new corners as waypoints
@@ -445,25 +447,25 @@ private:
 		if (dDistanceFront > 0)
 		{
 			Pos p(1, nHeight - 2);
-			if(mapData[p.x][p.y] == unknown)
+			//if (mapData[p.x][p.y] == unknown)
 				addWayPoint(p, false, false);
 		}
 		if (dDistanceBack > 0)
 		{
 			Pos p(nWidth - 2, nHeight - 2);
-			if (mapData[p.x][p.y] == unknown)
+			//if (mapData[p.x][p.y] == unknown)
 				addWayPoint(p, false, false);
 		}
 		if (dDistanceLeft > 0)
 		{
 			Pos p(1, 1);
-			if (mapData[p.x][p.y] == unknown)
+			//if (mapData[p.x][p.y] == unknown)
 				addWayPoint(p, false, false);
 		}
 		if (dDistanceRight > 0)
 		{
 			Pos p(nWidth - 2, 1);
-			if (mapData[p.x][p.y] == unknown)
+			//if (mapData[p.x][p.y] == unknown)
 				addWayPoint(p, false, false);
 		}
 
@@ -471,14 +473,14 @@ private:
 
 	}
 
-	
+
 	//scan the area for enemies
 	//calculate cost to kill all enemies
 	//sort by lowest cost first, use lowest cost operations
-	
+
 	void threatAssessment()
 	{
-		vector<scanResults> vsr(4); 
+		vector<scanResults> vsr(4);
 		ScanMap(currentPos, vsr, angle);
 		//debug
 		//
@@ -490,7 +492,7 @@ private:
 		//remove non enemies
 		for (int i = 0; i < (int)vsr.size(); i++)
 		{
-			if (vsr[i].v != enemy) 
+			if (vsr[i].v != enemy)
 			{
 				vsr.erase(vsr.begin() + i);
 				i--;
@@ -558,44 +560,43 @@ private:
 			int nCost = 0;
 			const int nStepToFire = 1;
 
-			//cost_idle = 1, cost_turn = 1, cost_move = 1, cost_fire = 5, cost_hit
 			for (int j = 0; j < (int)vkill.size(); j++)
 			{
 				nCost = 0;
 				int n = vkill[j];
 				scanResults & sr = vsr[n];
-			
+
 				//NOTE! every turn is counted, even if you turn to objects that are are not enemy
 
 				//TODO - impruve it with enemy classification, inbound, outbound, static...
 				bool bShoot = false;
-				if (sr.v == enemy ) //&& sr.direction == enemy_inbound
+				if (sr.v == enemy) //&& sr.direction == enemy_inbound
 				{
 					bShoot = true;
 				}
 				// calculate cost in turn(sortest) and fire
 				int nStepToGetInLine = min(abs((nAngle - sr.a) % 4), abs((nAngle - sr.a + 4) % 4));
 				nCost += cost_turn * nStepToGetInLine;
-				if(bShoot)
-					nCost += cost_fire; 
-					
+				if (bShoot)
+					nCost += cost_fire;
+
 				//Fire and turns has to be counted before calculating damage
 				nStep += nStepToGetInLine;
-				if(bShoot)
+				if (bShoot)
 					nStep += nStepToFire;
-					
+
 				// calculate damage
-				if(bShoot)
+				if (bShoot)
 					if ((nStep - sr.d) > 0)
 						nCost += (nStep - sr.d) * 50;
 				nAngle = sr.a;
-				
+
 				nCostAll += nCost;
 			}
 			vCostToKill.push_back(std::make_pair(nCostAll, vkill));
 		}
-		sort(vCostToKill.begin(), vCostToKill.end(), pairIntVectorCompare());
-	
+		sort(vCostToKill.begin(), vCostToKill.end(), compareKillCost());
+
 		//assign the enemy to be your next target
 		vNextEnemy.clear();
 		for (int i = 0; i < (int)vCostToKill.size(); i++)
@@ -617,10 +618,10 @@ private:
 			nStep++;
 			switch (angle)
 			{
-			case front_: sr.v = mapData[p.x][p.y + nStep]; sr.p = Pos(p.x,p.y + nStep); break;
-			case right_: sr.v = mapData[p.x + nStep][p.y]; sr.p = Pos(p.x + nStep,p.y); break;
-			case back_: sr.v = mapData[p.x][p.y - nStep]; sr.p = Pos(p.x,p.y - nStep); break;
-			case left_: sr.v = mapData[p.x - nStep][p.y]; sr.p = Pos(p.x - nStep,p.y); break;
+			case front_: sr.v = mapData[p.x][p.y + nStep]; sr.p = Pos(p.x, p.y + nStep); break;
+			case right_: sr.v = mapData[p.x + nStep][p.y]; sr.p = Pos(p.x + nStep, p.y); break;
+			case back_: sr.v = mapData[p.x][p.y - nStep]; sr.p = Pos(p.x, p.y - nStep); break;
+			case left_: sr.v = mapData[p.x - nStep][p.y]; sr.p = Pos(p.x - nStep, p.y); break;
 			}
 		}
 		sr.d = nStep;
@@ -643,14 +644,15 @@ private:
 
 	void AddAllUnknownsAsWaypoints()
 	{
-		for (int x = 1; x < (int)mapData.size()-1; x++)
+		for (int x = 1; x < (int)mapData.size() - 1; x++)
 		{
-			for (int y = 1; y < (int)mapData[0].size()-1; y++)		
+			for (int y = 1; y < (int)mapData[0].size() - 1; y++)
 			{
 				int v = mapData[x][y];
 				if (v == scanned_unknown || v == unknown)
 				{
-					addWayPoint(Pos(x, y), false, false);
+					Pos p(x, y);
+					addWayPoint(p, false, false);
 				}
 			}
 			cout << endl;
@@ -678,21 +680,17 @@ private:
 
 			nWidth = mapData.size();
 			nHeight = mapData[0].size();
-			
+
 			vpathfinder.clear();
 			vpathfinder = mapData;
-			
+
 			if (nDeadEndCount < (int)waypoints.size())
 			{
-				//update dist to current pos
-				for (int i = 0; i < (int)waypoints.size(); i++)
-				{
-					waypoints[i].d = GETDISTANCE(waypoints[i], currentPos);
-				}
-				// sort the waypoints get closest one
+				// sort the waypoints get unexplored and closest one
 				if (bSortWayPoint)
 				{
-					//sort(waypoints.begin(), waypoints.end() - nDeadEndCount, cmpPos());
+					updateWayPointsWeight();
+					sort(waypoints.begin(), waypoints.end() /*- nDeadEndCount*/, compareWaypoint());
 					bSortWayPoint = false;
 				}
 			}
@@ -706,14 +704,14 @@ private:
 				AddAllUnknownsAsWaypoints();
 			}
 
-			Pos start = waypoints[0];
+			Pos start = waypoints[0].second;
 			Pos end = currentPos;
-			while(start == end)
+			while (start == end)
 			{
 				waypoints.erase(waypoints.begin());
 				bSortWayPoint = true;
-				start = waypoints[0];
-				if(!waypoints.size()) continue;
+				start = waypoints[0].second;
+				if (!waypoints.size()) continue;
 			}
 			bool bFound = false;
 
@@ -798,19 +796,18 @@ private:
 				}
 			}
 			if (bDeadEnd && bWalkOnScanedUnknown && bWalkOnScanedUnknown)
-			{ 
+			{
 				//remove only when it has tried walking ob scaned unknownes
 				waypoints.erase(waypoints.begin());
 				bSortWayPoint = true;
-				waypoints.push_back(start);
+				//addWayPoint(start, false, false);
 				nDeadEndCount++;
 			}
-			else if(!bDeadEnd)
+			else if (!bDeadEnd)
 			{
 				nextPos = vpath[vpath.size() == 1 ? 0 : 1];
 			}
-		}
-		while(bDeadEnd);
+		} while (bDeadEnd);
 
 		//debug
 		//for (int i = 0; i < (int)vpath.size(); i++)
@@ -821,7 +818,7 @@ private:
 
 	bool CanWalkON(Pos &p, bool bWalkOnScanedUnknown, bool bWalkOnVisited)
 	{
-		int v = GetValue(vpathfinder,p);
+		int v = GetValue(vpathfinder, p);
 
 		if (p == currentPos) bWalkOnVisited = true;
 		if (v == unknown || v == scanned_empty || v == enemy || (bWalkOnScanedUnknown && v == scanned_unknown) || (bWalkOnVisited && v == visited))
@@ -832,24 +829,52 @@ private:
 	}
 
 
-	void addWayPoint(Pos p, bool bHighPriority, bool bAddAfterCurrent)
+	void addWayPoint(Pos p, bool bHighPriority, bool bLookOnly)
 	{
-		cout << "WayPoint:" << p.x << "," << p.y << endl;
-		if (bHighPriority)
+		p.bLookOnly = bLookOnly;
+		p.bHighPriority = bHighPriority;
+
+		int weight = CalculateWayPointWeight(p);
+		cout << "WayPoint(" << weight << "):" << p.x << "," << p.y << endl;
+		/*if (bHighPriority)
 		{
 			//this prevents overwriting of any other high priority waypoint
 			int offset = 0;
 			for (offset = 0; offset < (int)waypoints.size(); offset++)
 			{
-				if (!waypoints[offset].bHighPriority) break;
+				if (!waypoints[offset].second.bHighPriority) break;
 			}
-			waypoints.insert(waypoints.begin() + offset, p);
+			waypoints.insert(waypoints.begin() + offset, make_pair(weight,p));
 		}
 		else
+		{*/
+			waypoints.push_back(make_pair(weight, p));
+		//}
+		bSortWayPoint = true;
+	}
+
+	void updateWayPointsWeight()
+	{
+		for (size_t i = 0; i < waypoints.size(); i++)
 		{
-			waypoints.push_back(p);
+			int weight = CalculateWayPointWeight(waypoints[i].second);
+			waypoints[i].first = weight;
+			waypoints[i].second.d = GETDISTANCE(waypoints[i].second, currentPos);
 		}
 	}
+	
+	//how attractive it is to discover, the lower the value the more ther is to discover
+	int CalculateWayPointWeight(Pos & p)
+	{
+		int n = GetValue(mapData, p);
+		int nf = GetValue(mapData, FRONT(p));
+		int nb = GetValue(mapData, BACK(p));
+		int nl = GetValue(mapData, LEFT(p));
+		int nr = GetValue(mapData, RIGHT(p));
+		return n + nf + nb + nr + nl;
+	}
+
+
 
 	void info_pathfinder()
 	{
@@ -877,12 +902,11 @@ public:
 	std::vector<std::vector<int>> mapData;
 	int angle;
 	Pos currentPos, nextPos, nextEnemy; //x,y
-	vector<Pos> waypoints;
+	vector< pair<int,Pos>> waypoints;
 	vector<Pos> vNextEnemy;
 	bool bSortWayPoint;
 	vector<vector<int>> vpathfinder;
 };
-
 
 void LoadMapData(string s)
 {
@@ -1059,7 +1083,7 @@ int main()
 			break; 
 		}
 		}
-		bDiscoveryDone = map.DiscoveryDone();
+		bDiscoveryDone = false;// map.DiscoveryDone();
 	}
 	map.info();
 	cout << "Map Discovery - Done!!!" << endl;
