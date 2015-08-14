@@ -25,7 +25,7 @@ public:
 	bool bLookOnly;
 };
 inline bool operator==(const Pos& p1, const Pos& p2) { return p1.x == p2.x && p1.y == p2.y; }
-struct cmpPos
+struct cmpPos //used for sorting
 {
 	inline bool operator() (const Pos& p1, const Pos& p2)
 	{
@@ -33,18 +33,19 @@ struct cmpPos
 	}
 };
 
+//simulator
 struct scanResultsSim { int f; int b; int l; int r; bool enemy; int angle; };
 struct scanResults { int d; int v; int a; int direction; Pos p; };
 vector<vector<int>> mapDataSim;
 
-struct compareKillCost
+struct compareKillCost //used for sorting
 {
 	inline bool operator() (const pair<int, vector<int>> & a, const pair<int, vector<int>> & b)
 	{
 		return (a.first < b.first);
 	}
 };
-struct compareWaypoint
+struct compareWaypoint //used for sorting
 {
 	inline bool operator() (const pair<int, Pos> & a, const pair<int, Pos> & b)
 	{
@@ -131,7 +132,8 @@ public:
 		int dDistanceRight = distance[right_];
 		int dDistanceBack = distance[back_];
 		int dDistanceLeft = distance[left_];
-
+		
+		// update the map with lidar data
 		for (int i = 1; i < dDistanceFront; i++)
 		{
 			mapData[p.x][p.y + i] = scanned_empty;
@@ -177,10 +179,12 @@ public:
 		updatePath();
 	}
 
+	//interpret the lidar data, minor change here will have big effect
 	void UpdateMapValue(Pos p, int v, int angle)
 	{
 		int & d = mapData[p.x][p.y];
-
+		
+		//used for counting how much more exploring there is to around a point
 		int nFreeSideCount = 0;
 		int vf = GetValue(mapData, FRONT(p));
 		int vr = GetValue(mapData, RIGHT(p));
@@ -191,7 +195,7 @@ public:
 		if (vb == scanned_empty) nFreeSideCount++;
 		if (vl == scanned_empty) nFreeSideCount++;
 
-		// look at some corners
+		// look at corners, this will discover static targets
 		if (d == unknown && v == scanned_unknown && nFreeSideCount >= 2)
 		{
 			//dont add outer edges
@@ -266,6 +270,7 @@ public:
 
 	int getNextStep()
 	{
+		//TODO - Add a pause, a countdown counter to when it can go exploring again
 		//do we have any enemies in sight, deal with them, 
 		if (vNextEnemy.size())
 		{
@@ -519,11 +524,13 @@ private:
 			}
 		}
 
+		//TODO - this looks shit
 		//build a list of possible combinations
 		int nCount = vsr.size();
 		vector<vector<int>> orderToKill;
 		for (int i = 0; i < nCount; i++)
 		{
+			//if one item then there is no need to loop, just add to vector else keep looping
 			if (nCount == 1)
 			{
 				orderToKill.push_back({ i });
@@ -532,6 +539,7 @@ private:
 			{
 				for (int j = 0; j < nCount; j++)
 				{
+					//if only 2 items then att to list else keep looping
 					if (nCount == 2)
 					{
 						if (i != j)
@@ -627,7 +635,7 @@ private:
 			}
 		}
 	}
-
+	//used to data from map for a angle
 	int ScanMapDirection(Pos p, int angle, scanResults & sr)
 	{
 		int nStep = 0;
@@ -648,20 +656,21 @@ private:
 		return nStep;
 	}
 
-	void ScanMap(Pos currentPos, vector<scanResults> & sr_, int angle)
+	//scan map for all directions for a p, just like lidar, 
+	void ScanMap(Pos p, vector<scanResults> & sr_, int angle)
 	{
 		vector<scanResults> vsr(4);
-		ScanMapDirection(currentPos, front_, vsr[0]);
-		ScanMapDirection(currentPos, right_, vsr[1]);
-		ScanMapDirection(currentPos, back_, vsr[2]);
-		ScanMapDirection(currentPos, left_, vsr[3]);
+		ScanMapDirection(p, front_, vsr[0]);
+		ScanMapDirection(p, right_, vsr[1]);
+		ScanMapDirection(p, back_, vsr[2]);
+		ScanMapDirection(p, left_, vsr[3]);
 		sr_[0] = vsr[(front_ + angle) % 4];
 		sr_[1] = vsr[(right_ + angle) % 4];
 		sr_[2] = vsr[(back_ + angle) % 4];
 		sr_[3] = vsr[(left_ + angle) % 4];
 	}
 
-
+	//this is called after we run out of waypoints, first it adds all unvisited places then all unknown
 	void AddAllUnknownsAsWaypoints()
 	{
 		vector<int> type = { unknown, scanned_unknown };
@@ -675,7 +684,7 @@ private:
 					if (v == type[t])
 					{
 						Pos p(x, y);
-						addWayPoint(p, false, false);
+						addWayPoint(p, false, true);
 					}
 				}
 				cout << endl;
@@ -685,6 +694,8 @@ private:
 		}
 	}
 
+	//TODO - write a function that return list of waypoints and angles for 
+	//	looking att "look at" waypoints with minimum steps and turns
 	void updatePath()
 	{
 		bool bDeadEnd = false;
@@ -693,6 +704,7 @@ private:
 		int nDeadEndCount = 0;
 		do
 		{
+			//TODO - go over that is used what is not
 			//we have an issue where waypoints are not been able to reached, we gone try walking on scanned _unkowns
 			//bWalkOnScanedUnknown = false;
 			bWalkOnVisited = false;
