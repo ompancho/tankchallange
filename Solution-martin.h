@@ -72,6 +72,7 @@ public:
 		, bSortWayPoint(true)
 		, lidarR(1)
 		, lidarL(1)
+		, nextStepPause(0)
 	{
 		//initial size 1x1
 		for (int i = 0; i < 1; i++)
@@ -207,21 +208,22 @@ public:
 		//moving enemy on the side
 		if ((d == scanned_empty || v == visited) && (v == scanned_unknown) )
 		{
-		//	if(GETDISTANCE(p, currentPos) <= 3)
+		if(GETDISTANCE(p, currentPos) <= 8)
+		//if(vf == enemy || vr == enemy || vb == enemy || vl == enemy)
 				d = enemy;
 		//	else
 				//TODO - Impruve this!!!
-		//		addWayPoint(p, true, true); //add a way point,
+				addWayPoint(p, false, false); //add a way point,
 		}
 		//moving enemy on the front
-		/*if ((d == scanned_empty || v == visited) && (v == enemy))
+		if ((d == scanned_empty || v == visited) && (v == enemy))
 		{
-			if(GETDISTANCE(p, currentPos) <= 2)
+			if(GETDISTANCE(p, currentPos) <= 6)
 				d = enemy;
 			else
 				//TODO - Impruve this!!!
 				addWayPoint(p, true, true); //add a way point,
-		}*/
+		}
 		//something moved, enemy - add waypoint
 		if ((d == scanned_unknown) && (v == scanned_empty))
 		{
@@ -295,11 +297,12 @@ public:
 			if (nNextStep == fire)
 			{
 				mapData[nextPos.x][nextPos.y] = scanned_empty;
+				nextStepPause = 3;
 			}
 
 			return nNextStep;
 		}
-		else
+		else if(nextStepPause-- <= 0)
 		{
 			//decide what command to exec based on currentPos, nextPos and angle
 			vector<int> vmove(4);
@@ -615,7 +618,7 @@ private:
 
 				// calculate damage
 				if (bShoot)
-					if ((nStep - sr.d) > 0)
+					if ((nStep - sr.d) > 3)
 						nCost += (nStep - sr.d) * 50;
 				nAngle = sr.a;
 
@@ -944,6 +947,7 @@ public:
 	vector<Pos> vNextEnemy;
 	bool bSortWayPoint;
 	vector<vector<int>> vpathfinder;
+	int nextStepPause;
 };
 
 
